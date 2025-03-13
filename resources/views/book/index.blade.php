@@ -1,5 +1,5 @@
 @extends('layouts.app')
 
 @section('content')
-    <body-component></body-component>
+    <book-list></book-list>
 @endsection

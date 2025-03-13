@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
-use Illuminate\Http\Request;
+use App\Http\Requests\SaveBookRequest;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -12,7 +13,11 @@ class BookController extends Controller
      */
     public function index()
     {
-        dd(1);
+        $bookModel = new Book();
+
+        return view('book.index')->with([
+            'books' => $bookModel->getPaginated()
+        ]);
     }
 
     /**
@@ -20,15 +25,25 @@ class BookController extends Controller
      */
     public function create()
     {
-        //
+        return view('book.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(SaveBookRequest $request)
     {
-        //
+        $fields = $request->validated();
+
+        if ($request->hasFile('image'))
+        {
+            $fields['image_path'] = Storage::disk('public')->put('images', $request->image);
+        }
+
+        $bookModel = new Book();
+        $bookModel->createBook($fields);
+       
+        return redirect()->route('books.index');
     }
 
     /**

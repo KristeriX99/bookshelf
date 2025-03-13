@@ -6,7 +6,7 @@ use App\Http\Controllers\BookController,
     App\Http\Controllers\AuthorController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/books');
 });
 
 Route::controller(BookController::class)->prefix('books')->group(function ()
