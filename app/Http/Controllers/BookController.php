@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Book;
+use App\Models\Book,
+    App\Models\Author;
+
 use App\Http\Requests\SaveBookRequest;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,7 +27,9 @@ class BookController extends Controller
      */
     public function create()
     {
-        return view('book.create');
+        return view('book.create')->with([
+            'authors' => Author::all()
+        ]);
     }
 
     /**
@@ -37,11 +41,17 @@ class BookController extends Controller
 
         if ($request->hasFile('image'))
         {
-            $fields['image_path'] = Storage::disk('public')->put('images', $request->image);
+            $path = Storage::disk('public')->put('images', $request->image);
+            $fields['image_path'] = Storage::url($path);
         }
 
         $bookModel = new Book();
-        $bookModel->createBook($fields);
+        $book = $bookModel->createBook($fields);
+        
+        if (!empty($fields['authors']))
+        {
+            $book->authors()->attach($fields['authors']);
+        }
        
         return redirect()->route('books.index');
     }

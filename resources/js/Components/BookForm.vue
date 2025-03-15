@@ -1,6 +1,10 @@
 <script setup>
 import axios from 'axios';
 import { reactive, ref } from 'vue';
+
+defineProps({
+    authors: Array
+});
  
 const errors = ref({})
  
@@ -8,7 +12,8 @@ const form = reactive({
     title: '',
     description: '',
     published: '',
-    image: ''
+    image: '',
+    authors: []
 });
  
 function submit() {
@@ -18,6 +23,9 @@ function submit() {
     formData.append('description', form.description);
     formData.append('published', form.published);
     formData.append('image', form.image);
+    form.authors.forEach(author => {
+        formData.append('authors[]', author);
+    });
 
     axios.post('/books', formData)
         .then(response => {
@@ -50,6 +58,15 @@ function imageUpload(e) {
                     <label for="description">Description</label>
                     <textarea class="form-control" id="description" rows="3" v-model="form.description"></textarea>
                     <div class="text-danger" v-if="errors?.description">{{ errors.description[0] }}</div>
+                </div>
+
+                <div>
+                    <label for="description">Authors</label>
+                    <select v-model="form.authors" class="form-select" multiple>
+                        <option v-for="author in authors" :key="author.id" :value="author.id">
+                            {{ author.first_name }} {{ author.name }}
+                        </option>
+                    </select>
                 </div>
 
                 <div class="mb-3">

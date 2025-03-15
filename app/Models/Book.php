@@ -32,7 +32,8 @@ class Book extends Model
 
     public function getPaginated()
     {
-        return $this->latest()
+        return $this->with('authors')
+                    ->latest()
                     ->paginate($this->listingsInPage);
     }
 

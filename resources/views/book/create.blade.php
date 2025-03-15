@@ -1,5 +1,5 @@
 @extends('layouts.app')
 
 @section('content')
-    <book-form></book-form>
+    <book-form :authors='@json($authors)'></book-form>
 @endsection

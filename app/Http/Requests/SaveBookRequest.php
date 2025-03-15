@@ -25,7 +25,8 @@ class SaveBookRequest extends FormRequest
             'title' => 'required|max:256',
             'description' => 'nullable|string',
             'published' => 'required|date',
-            'image' => 'nullable|image'
+            'image' => 'nullable|image',
+            'authors' => 'nullable|array'
         ];
     }
 }
