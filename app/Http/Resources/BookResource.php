@@ -19,7 +19,7 @@ class BookResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'authors' => $this->authors->select(['first_name', 'name']),
-            'cover_path' => config('app.url') . Storage::url($this->image_path),
+            'cover_path' => $this->image_path ? config('app.url') . Storage::url($this->image_path) : null,
             'total_sales' => $this->sales_count,
             'monthly_sales' => $this->monthly_sales,
             'created_at' => $this->created_at

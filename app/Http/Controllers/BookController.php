@@ -111,7 +111,6 @@ class BookController extends Controller
         $book = $book->getByIDExt($book->id);
 
         return response()->json([
-            'success' => true,
             'sales_count' => $book->sales_count,
             'monthly_sales' => $book->monthly_sales
         ]);

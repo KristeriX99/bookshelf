@@ -1,5 +1,6 @@
 <script setup>
 import { ref, defineProps } from 'vue';
+import {useToast} from 'vue-toast-notification';
 
 const props = defineProps({ 
     books: Object,
@@ -8,6 +9,7 @@ const props = defineProps({
         default: ''
     }
 });
+const toast = useToast();
 
 const search = ref(props.search || '');
 
@@ -37,6 +39,8 @@ function buyBook(bookId) {
       if (bookIndex !== -1) {
         booksData.value.data[bookIndex].sales_count = response.data.sales_count;
         booksData.value.data[bookIndex].monthly_sales = response.data.monthly_sales;
+
+        toast.success('Book has been bought!');
       }
     })
     .catch(error => {
@@ -63,6 +67,9 @@ function buyBook(bookId) {
     <button class="btn btn-secondary" type="button" @click="fetchSearchResults">Search</button>
   </div>
 </div>
+  </div>
+    <div v-if="booksData.data.length === 0" class="col text-center my-4">
+      <p>No books to show</p>
   </div>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
         <div v-for="book in booksData.data" :key="book.id" class="col">

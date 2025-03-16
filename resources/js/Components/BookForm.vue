@@ -80,10 +80,16 @@ function formatDate(dateString) {
 </script>
  
 <template>
-    <h2 class="my-4">
-        <span v-if="book">Edit book</span>
-        <span v-else>Add a book</span>
-    </h2>
+    
+    <div class="row">
+        <h2 class="my-4 col">
+            <span v-if="book">Edit book</span>
+            <span v-else>Add a book</span>
+        </h2>
+        <div class="col text-end">
+        <a class="my-4 btn btn-secondary" href="/books">To list</a>
+        </div>
+    </div>
     <div class="bg-gray-50 min-h-screen pt-12">
         <div class="max-w-md mx-auto rounded shadow-sm p-6 text-gray-900">
             <form @submit.prevent="submit" enctype="multipart/form-data">
@@ -99,7 +105,7 @@ function formatDate(dateString) {
                     <div class="text-danger" v-if="errors?.description">{{ errors.description[0] }}</div>
                 </div>
 
-                <div>
+                <div class="mb-3">
                     <label for="description">Authors</label>
                     <select v-model="form.authors" class="form-select" multiple>
                         <option v-for="author in authors" :key="author.id" :value="author.id">
@@ -114,7 +120,7 @@ function formatDate(dateString) {
                     <div class="text-danger" v-if="errors?.published">{{ errors.published[0] }}</div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-3 mt-2">
                     <label for="image">Cover image</label>
                     <input type="file" class="form-control" id="image" @input="imageUpload">
                     <div class="text-danger" v-if="errors?.image">{{ errors.image[0] }}</div>
@@ -124,12 +130,12 @@ function formatDate(dateString) {
                 </div>
 
                 <div class="d-flex justify-content-center">
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary my-3">Submit</button>
                 </div>
             </form>
 
             <ol v-if="book" class="mt-3">
-                <h5>Nopirktās grāmatas:</h5>
+                <h5>Bought books:</h5>
                 <li v-for="(sales, index) in book.sales.slice().reverse()" :key="sales.id">
                     {{ book.sales.length - index }}. {{ formatDate(sales.created_at) }}
                 </li>

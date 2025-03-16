@@ -9,4 +9,5 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// unauthenticated route!
 Route::get('montly-books', [BookController::class, 'getMontlyBooksApi'])->name('get_monthly_books');
