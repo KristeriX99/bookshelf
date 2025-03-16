@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    <book-list :books='@json($books)'></book-list>
+    <book-list 
+        :books='@json($books)' 
+        :search='@json($search)'
+    ></book-list>
 @endsection

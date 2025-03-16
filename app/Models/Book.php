@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Book extends Model
 {
@@ -30,15 +31,60 @@ class Book extends Model
         return $this->delete();
     }
 
-    public function getPaginated()
+    public function getByIDExt($id)
     {
-        return $this->with('authors')
-                    ->latest()
-                    ->paginate($this->listingsInPage);
+        return $this->where('id', $id)
+                    ->withCount('sales')
+                    ->withMonthlySales()
+                    ->first(); 
+    }
+
+    public function scopeWithMonthlySales(Builder $query)
+    {
+        return $query->withCount([
+            'sales as monthly_sales' => function ($query) {
+                $query->where('created_at', '>=', now()->subDays(30));
+            }
+        ]);
+    }
+
+    public function getPaginated($query = null)
+    {
+        $books = $this->with('authors')
+                    ->withCount('sales')
+                    ->withMonthlySales();
+        
+        if ($query) {
+            $books->where(function($q) use ($query) {
+                $q->where('title', 'LIKE', "%{$query}%")
+                  ->orWhereHas('authors', function($authorQuery) use ($query) {
+                      $authorQuery->where('name', 'LIKE', "%{$query}%");
+                  });
+            });
+        }
+        
+        return $books->orderBy('monthly_sales', 'desc')
+                    ->paginate($this->listingsInPage)
+                    ->withQueryString();
     }
 
     public function authors()
     {
         return $this->belongsToMany(Author::class, 'author_book', 'book_id', 'author_id');
+    }
+
+    public function sales()
+    {
+        return $this->hasMany(BookSales::class, 'book_id', 'id');
+    }
+
+    public function getTopMonthlySales()
+    {
+        return $this->with('authors')
+                    ->withCount('sales')
+                    ->withMonthlySales()
+                    ->orderBy('monthly_sales', 'desc')
+                    ->limit(10)
+                    ->get();
     }
 }

@@ -1,9 +1,25 @@
 <script setup>
-import { defineProps } from 'vue';
+import { ref, defineProps } from 'vue';
 
-defineProps({
-    books: Object
+const props = defineProps({ 
+    books: Object,
+    search: {
+        type: String,
+        default: ''
+    }
 });
+
+const search = ref(props.search || '');
+
+// bind to property so it can be updated dinamically
+const booksData = ref(props.books);
+
+function fetchSearchResults() {
+
+    const url = new URL(window.location);
+    url.searchParams.set('search', search.value);
+    window.location.href = url.toString();
+}
 
 function truncateText(text) {
     const maxLength = 100;
@@ -11,6 +27,21 @@ function truncateText(text) {
       return text.substring(0, maxLength) + '...';
     }
     return text;
+}
+
+function buyBook(bookId) {
+  axios.post(`/books/${bookId}/buy`)
+    .then(response => {
+      const bookIndex = booksData.value.data.findIndex(book => book.id === bookId);
+      
+      if (bookIndex !== -1) {
+        booksData.value.data[bookIndex].sales_count = response.data.sales_count;
+        booksData.value.data[bookIndex].monthly_sales = response.data.monthly_sales;
+      }
+    })
+    .catch(error => {
+      console.error('Error buying book', error);
+    });
 }
 </script>
 
@@ -21,8 +52,20 @@ function truncateText(text) {
       <a class="my-4 btn btn-primary" href="/books/create">New</a>
     </div>
   </div>
+  <div class="row mb-2">
+    <div class="col-md-4 offset-md-8">
+  <div class="input-group">
+    <input
+      class="form-control"
+      type="text"
+      placeholder="Search by book title or author"
+      v-model="search">
+    <button class="btn btn-secondary" type="button" @click="fetchSearchResults">Search</button>
+  </div>
+</div>
+  </div>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-        <div v-for="book in books.data" :key="book.id" class="col">
+        <div v-for="book in booksData.data" :key="book.id" class="col">
           <div class="card shadow-sm">
             <img v-if="book.image_path" :src="book.image_path" alt="Book cover" style="width: 100%; height: 225px; object-fit: cover;">
             <svg v-else class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false">
@@ -44,12 +87,14 @@ function truncateText(text) {
               <p class="card-text">{{ truncateText(book.description) }}</p>
               <div class="d-flex justify-content-between align-items-center">
                 <div class="btn-group">
-                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <a class="btn btn-sm btn-outline-secondary" :href="`/books/${book.id}/edit`">View/Edit</a>
                 </div>
                 <div class="btn-group">
-                  <button type="button" class="btn btn-sm btn-outline-success">Buy</button>
+                  <button type="button" class="btn btn-sm btn-outline-success" @click="buyBook(book.id)">Buy</button>
                 </div>
               </div>
+              <div class="text-muted lh-sm text-end mt-2">Sales this month: {{ book.monthly_sales }}</div>
+              <div class="text-muted lh-sm text-end mt-2">Total sales: {{ book.sales_count }}</div>
             </div>
           </div>
         </div>

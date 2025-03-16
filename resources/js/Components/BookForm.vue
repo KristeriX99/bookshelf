@@ -1,12 +1,14 @@
 <script setup>
 import axios from 'axios';
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 
-defineProps({
-    authors: Array
+const props = defineProps({
+    authors: Array,
+    book: Object
 });
  
-const errors = ref({})
+const errors = ref({});
+const existingImage = ref('');
  
 const form = reactive({
     title: '',
@@ -15,6 +17,16 @@ const form = reactive({
     image: '',
     authors: []
 });
+
+onMounted(() => {
+    if (props.book) {
+        form.title = props.book.title;
+        form.description = props.book.description ?? '';
+        form.published = props.book.published;
+        form.authors = props.book.authors.map(author => author.id);
+        existingImage.value = props.book.image_path;
+    }
+})
  
 function submit() {
 
@@ -27,7 +39,15 @@ function submit() {
         formData.append('authors[]', author);
     });
 
-    axios.post('/books', formData)
+    const url = props.book ? `/books/${props.book.id}` : '/books';
+    const method = props.book ? 'put' : 'post';
+
+    // simulate method
+    if (props.book) {
+        formData.append('_method', method);
+    }
+
+    axios.post(url, formData)
         .then(response => {
             window.location.href = response.request.responseURL;
         })
@@ -39,12 +59,31 @@ function submit() {
 }
 
 function imageUpload(e) {
-    form.image = e.target.files[0];
+    const file = e.target.files[0];
+    if (file) {
+        form.image = file;
+        existingImage.value = URL.createObjectURL(file);
+    }
+}
+
+function formatDate(dateString) {
+
+    const date = new Date(dateString);
+            return date.toLocaleDateString('lv-LV', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).replace(',', ''); // Removes comma between date and time
 }
 </script>
  
 <template>
-    <h2 class="my-4">Add a book</h2>
+    <h2 class="my-4">
+        <span v-if="book">Edit book</span>
+        <span v-else>Add a book</span>
+    </h2>
     <div class="bg-gray-50 min-h-screen pt-12">
         <div class="max-w-md mx-auto rounded shadow-sm p-6 text-gray-900">
             <form @submit.prevent="submit" enctype="multipart/form-data">
@@ -79,10 +118,22 @@ function imageUpload(e) {
                     <label for="image">Cover image</label>
                     <input type="file" class="form-control" id="image" @input="imageUpload">
                     <div class="text-danger" v-if="errors?.image">{{ errors.image[0] }}</div>
+                    <div v-if="existingImage" class="mb-2">
+                        <img :src="existingImage" alt="Current Book Cover" class="img-thumbnail" width="150">
+                    </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
             </form>
+
+            <ol v-if="book" class="mt-3">
+                <h5>Nopirktās grāmatas:</h5>
+                <li v-for="(sales, index) in book.sales.slice().reverse()" :key="sales.id">
+                    {{ book.sales.length - index }}. {{ formatDate(sales.created_at) }}
+                </li>
+            </ol>
         </div>
     </div>
 </template>

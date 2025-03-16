@@ -15,9 +15,9 @@ Route::controller(BookController::class)->prefix('books')->group(function ()
     Route::get('create', 'create')->name('books.create');
     Route::post('', 'store')->name('books.store');
     Route::get('{book}', 'show')->name('books.show');
+    Route::put('{book}', 'update')->name('books.update');
     Route::get('{book}/edit', 'edit')->name('books.edit');
-    Route::match(['get', 'post'], '{book}', 'update')->name('books.update');
-    Route::delete('', 'destroy')->name('books.destroy');
+    Route::post('{book}/buy', 'buy')->name('books.buy');
 });
 
 Route::controller(AuthorController::class)->prefix('authors')->group(function ()
