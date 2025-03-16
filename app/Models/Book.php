@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
+use DB;
+
 class Book extends Model
 {
     protected $fillable = [
@@ -58,7 +60,10 @@ class Book extends Model
             $books->where(function($q) use ($query) {
                 $q->where('title', 'LIKE', "%{$query}%")
                   ->orWhereHas('authors', function($authorQuery) use ($query) {
-                      $authorQuery->where('name', 'LIKE', "%{$query}%");
+                    // allows to search by firstname and name or by either
+                    $authorQuery->whereRaw("first_name || ' ' || name LIKE ?", ["%{$query}%"]);
+                                    // ->where('first_name', 'LIKE', "%{$query}%")
+                                    // ->orWhere('name', 'LIKE', "%{$query}%");
                   });
             });
         }
